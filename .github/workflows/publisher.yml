@@ -1,4 +1,5 @@
-name: AI Publisher
+
+      name: AI Publisher
 
 on:
   workflow_dispatch:
@@ -18,7 +19,7 @@ jobs:
         python-version: '3.10'
 
     - name: Install Dependencies
-      run: pip install google-generativeai requests
+      run: pip install google-genai requests
 
     - name: Run Publisher Script
       env:
