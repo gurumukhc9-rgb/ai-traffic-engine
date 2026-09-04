@@ -9,7 +9,9 @@ def generate_and_send():
     receiver_email = os.environ.get('BLOGGER_EMAIL')
     
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-pro')
+    
+    # Using the correct current stable model name
+    model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = "Write a captivating, viral, SEO-optimized blog post about a mysterious, dark, or forgotten historical event or hidden American urban legend suitable for a blog named Dark and Forgotten America. Format with a catchy Title on the very first line starting with 'TITLE: ', followed by a blank line, and then the detailed HTML body content (use <h2>, <p> tags)."
     
@@ -45,4 +47,4 @@ def generate_and_send():
 
 if __name__ == "__main__":
     generate_and_send()
-  
+    
