@@ -1,5 +1,5 @@
 import os
-import google.generativeai as genai
+from google import genai
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -8,14 +8,21 @@ def generate_and_send():
     api_key = os.environ.get('GEMINI_API_KEY')
     receiver_email = os.environ.get('BLOGGER_EMAIL')
     
-    genai.configure(api_key=api_key)
-    
-    # Original working model blueprint configuration
-    model = genai.GenerativeModel('gemini-pro')
+    if not api_key:
+        print("Error: API Key missing")
+        return
+
+    # New official Google GenAI client initialization
+    client = genai.Client(api_key=api_key)
     
     prompt = "Write a captivating, viral, SEO-optimized blog post about a mysterious, dark, or forgotten historical event or hidden American urban legend suitable for a blog named Dark and Forgotten America. Format with a catchy Title on the very first line starting with 'TITLE: ', followed by a blank line, and then the detailed HTML body content (use <h2>, <p> tags)."
     
-    response = model.generate_content(prompt)
+    # Using the standard modern flash model
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=prompt,
+    )
+    
     text = response.text.strip()
     
     lines = text.split('\n')
@@ -41,9 +48,9 @@ def generate_and_send():
             server.starttls()
             server.login(receiver_email, 'dummy_pass')
     except Exception as e:
-        print(f"Note: {e}")
+        print(f"Mail Note: {e}")
         
-    print("Content generated successfully!")
+    print("Successfully executed with new client!")
 
 if __name__ == "__main__":
     generate_and_send()
