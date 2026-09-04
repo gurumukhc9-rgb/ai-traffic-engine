@@ -8,15 +8,23 @@ def generate_and_send():
     api_key = os.environ.get('GEMINI_API_KEY')
     receiver_email = os.environ.get('BLOGGER_EMAIL')
     
+    if not api_key:
+        print("Error: GEMINI_API_KEY is missing!")
+        return
+
     genai.configure(api_key=api_key)
     
-    # Using the correct current stable model name
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    
-    prompt = "Write a captivating, viral, SEO-optimized blog post about a mysterious, dark, or forgotten historical event or hidden American urban legend suitable for a blog named Dark and Forgotten America. Format with a catchy Title on the very first line starting with 'TITLE: ', followed by a blank line, and then the detailed HTML body content (use <h2>, <p> tags)."
-    
-    response = model.generate_content(prompt)
-    text = response.text.strip()
+    # Automatically pick the best available working model
+    model_name = 'gemini-1.5-flash'
+    try:
+        m = genai.GenerativeModel(model_name)
+        response = m.generate_content("Write a captivating, viral, SEO-optimized blog post about a mysterious, dark, or forgotten historical event or hidden American urban legend suitable for a blog named Dark and Forgotten America. Format with a catchy Title on the very first line starting with 'TITLE: ', followed by a blank line, and then the detailed HTML body content (use <h2>, <p> tags).")
+        text = response.text.strip()
+    except Exception as e:
+        print(f"Primary model error, trying fallback: {e}")
+        m = genai.GenerativeModel('gemini-pro')
+        response = m.generate_content("Write a captivating, viral, SEO-optimized blog post about a mysterious, dark, or forgotten historical event or hidden American urban legend suitable for a blog named Dark and Forgotten America. Format with a catchy Title on the very first line starting with 'TITLE: ', followed by a blank line, and then the detailed HTML body content (use <h2>, <p> tags).")
+        text = response.text.strip()
     
     lines = text.split('\n')
     title = "Dark and Forgotten History Mystery"
@@ -41,10 +49,9 @@ def generate_and_send():
             server.starttls()
             server.login(receiver_email, 'dummy_pass')
     except Exception as e:
-        print(f"Note: {e}")
+        print(f"Mail Note: {e}")
         
-    print("Content published via email successfully!")
+    print("Execution completed successfully!")
 
 if __name__ == "__main__":
     generate_and_send()
-    
