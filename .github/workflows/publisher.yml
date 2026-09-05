@@ -18,10 +18,11 @@ jobs:
           python-version: '3.10'
 
       - name: Install Dependencies
-        run: pip install google-genai requests
+        run: pip install --upgrade google-genai requests
 
       - name: Run Publisher Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           BLOGGER_EMAIL: ${{ secrets.BLOGGER_EMAIL }}
         run: python scripts/auto_publisher.py
+        
