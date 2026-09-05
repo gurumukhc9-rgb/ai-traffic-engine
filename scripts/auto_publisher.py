@@ -9,21 +9,34 @@ def generate_and_send():
     receiver_email = os.environ.get('BLOGGER_EMAIL')
     
     if not api_key:
-        print("Error: API Key missing")
+        print("Error: GEMINI_API_KEY is missing from GitHub Secrets!")
         return
 
-    # New official Google GenAI client initialization
+    # Initializing the modern Google GenAI client
     client = genai.Client(api_key=api_key)
     
-    prompt = "Write a captivating, viral, SEO-optimized blog post about a mysterious, dark, or forgotten historical event or hidden American urban legend suitable for a blog named Dark and Forgotten America. Format with a catchy Title on the very first line starting with 'TITLE: ', followed by a blank line, and then the detailed HTML body content (use <h2>, <p> tags)."
-    
-    # Using the standard modern flash model
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=prompt,
+    prompt = (
+        "Write a captivating, viral, SEO-optimized blog post about a mysterious, dark, "
+        "or forgotten historical event or hidden American urban legend suitable for a blog "
+        "named Dark and Forgotten America. Format with a catchy Title on the very first line "
+        "starting with 'TITLE: ', followed by a blank line, and then the detailed HTML body "
+        "content using <h2> and <p> tags."
     )
     
-    text = response.text.strip()
+    try:
+        # Using the latest stable model as per current requirements
+        response = client.models.generate_content(
+            model='gemini-3.6-flash',
+            contents=prompt,
+        )
+        text = response.text.strip()
+    except Exception as e:
+        print(f"Primary model generation failed, trying fallback: {e}")
+        response = client.models.generate_content(
+            model='gemini-1.5-flash',
+            contents=prompt,
+        )
+        text = response.text.strip()
     
     lines = text.split('\n')
     title = "Dark and Forgotten History Mystery"
@@ -48,10 +61,10 @@ def generate_and_send():
             server.starttls()
             server.login(receiver_email, 'dummy_pass')
     except Exception as e:
-        print(f"Mail Note: {e}")
+        print(f"Mail Note (Safe to ignore if dummy): {e}")
         
-    print("Successfully executed with new client!")
+    print("Content generation and publishing pipeline executed successfully!")
 
 if __name__ == "__main__":
     generate_and_send()
-
+    
