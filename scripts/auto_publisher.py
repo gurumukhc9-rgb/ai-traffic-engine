@@ -1,3 +1,5 @@
+
+    
 import os
 from google import genai
 import smtplib
@@ -6,15 +8,15 @@ from email.mime.multipart import MIMEMultipart
 
 def generate_and_send():
     api_key = os.environ.get('GEMINI_API_KEY')
-    # Aapka Blogger secret email jo screenshot mein hai
+    sender_email = os.environ.get('BLOGGER_EMAIL')
+    sender_password = os.environ.get('MAIL_APP_PASSWORD')
+    
     blogger_email = "gurumukhc9.myblog2026@blogger.com"
     
-    # Gmail credentials jo GitHub Secrets se aayenge taaki email bheja ja sake
-    sender_email = os.environ.get('BLOGGER_EMAIL')
-    sender_password = os.environ.get('MAIL_APP_PASSWORD') # Gmail App Password
+    print(f"Checking Secrets -> GEMINI_API_KEY: {'Found' if api_key else 'Missing'}, BLOGGER_EMAIL: {'Found' if sender_email else 'Missing'}, MAIL_APP_PASSWORD: {'Found' if sender_password else 'Missing'}")
     
     if not api_key or not sender_email or not sender_password:
-        print("Error: Required Secrets are missing in GitHub!")
+        print("Error: One or more required Secrets are missing in GitHub!")
         return
 
     client = genai.Client(api_key=api_key)
@@ -35,11 +37,15 @@ def generate_and_send():
         text = response.text.strip()
     except Exception as e:
         print(f"Primary model failed, trying fallback: {e}")
-        response = client.models.generate_content(
-            model='gemini-1.5-flash',
-            contents=prompt,
-        )
-        text = response.text.strip()
+        try:
+            response = client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=prompt,
+            )
+            text = response.text.strip()
+        except Exception as e2:
+            print(f"Both models failed: {e2}")
+            return
     
     lines = text.split('\n')
     title = "Dark and Forgotten History Mystery"
@@ -53,14 +59,12 @@ def generate_and_send():
             
     print(f"Generated Title: {title}")
     
-    # Creating the email payload for Blogger
     msg = MIMEMultipart()
     msg['Subject'] = title
     msg['From'] = sender_email
     msg['To'] = blogger_email
     msg.attach(MIMEText(content, 'html'))
     
-    # Sending email directly to Blogger's secret publishing address
     try:
         with smtplib.SMTP('smtp.gmail.com', 587) as server:
             server.starttls()
