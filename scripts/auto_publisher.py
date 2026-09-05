@@ -1,20 +1,12 @@
 import os
 from google import genai
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import datetime
 
-def generate_and_send():
+def generate_and_save_locally():
     api_key = os.environ.get('GEMINI_API_KEY')
-    sender_email = os.environ.get('BLOGGER_EMAIL')
-    sender_password = os.environ.get('MAIL_APP_PASSWORD')
     
-    blogger_email = "gurumukhc9.myblog2026@blogger.com"
-    
-    print(f"Checking Secrets -> GEMINI_API_KEY: {'Found' if api_key else 'Missing'}, BLOGGER_EMAIL: {'Found' if sender_email else 'Missing'}, MAIL_APP_PASSWORD: {'Found' if sender_password else 'Missing'}")
-    
-    if not api_key or not sender_email or not sender_password:
-        print("Error: One or more required Secrets are missing in GitHub!")
+    if not api_key:
+        print("Error: GEMINI_API_KEY is missing!")
         return
 
     client = genai.Client(api_key=api_key)
@@ -44,34 +36,16 @@ def generate_and_send():
         except Exception as e2:
             print(f"Both models failed: {e2}")
             return
-    
-    lines = text.split('\n')
-    title = "Dark and Forgotten History Mystery"
-    content = text
-    
-    for line in lines:
-        if line.startswith("TITLE:"):
-            title = line.replace("TITLE:", "").strip()
-            content = text.replace(line, "").strip()
-            break
             
-    print(f"Generated Title: {title}")
+    os.makedirs("posts", exist_ok=True)
+    date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f"posts/post_{date_str}.html"
     
-    msg = MIMEMultipart()
-    msg['Subject'] = title
-    msg['From'] = sender_email
-    msg['To'] = blogger_email
-    msg.attach(MIMEText(content, 'html'))
-    
-    try:
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, blogger_email, msg.as_string())
-        print("Email successfully sent to Blogger. Post will go live immediately!")
-    except Exception as e:
-        print(f"Failed to send email: {e}")
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(text)
+        
+    print(f"Article successfully saved to repository as: {filename}")
 
 if __name__ == "__main__":
-    generate_and_send()
+    generate_and_save_locally()
     
