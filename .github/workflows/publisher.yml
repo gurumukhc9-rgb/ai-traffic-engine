@@ -24,5 +24,6 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           BLOGGER_EMAIL: ${{ secrets.BLOGGER_EMAIL }}
+          MAIL_APP_PASSWORD: ${{ secrets.MAIL_APP_PASSWORD }}
         run: python scripts/auto_publisher.py
         
