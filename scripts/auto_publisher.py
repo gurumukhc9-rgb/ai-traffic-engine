@@ -8,6 +8,7 @@ def generate_post():
         print("Error: GEMINI_API_KEY is missing!")
         return
 
+    print("API Key found. Initializing Gemini client...")
     client = genai.Client(api_key=api_key)
     
     prompt = (
@@ -18,8 +19,8 @@ def generate_post():
         "content using <h2> and <p> tags."
     )
     
-    # सबसे सुरक्षित और लेटेस्ट मॉडल का इस्तेमाल
     try:
+        print("Generating content with gemini-2.5-flash...")
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
@@ -37,6 +38,7 @@ def generate_post():
             print(f"All models failed: {e2}")
             return
             
+    # पक्का करें कि 'posts' फोल्डर बने
     os.makedirs("posts", exist_ok=True)
     date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"posts/post_{date_str}.html"
@@ -44,7 +46,7 @@ def generate_post():
     with open(filename, "w", encoding="utf-8") as f:
         f.write(text)
         
-    print(f"Article successfully saved to: {filename}")
+    print(f"File successfully created and saved at: {filename}")
 
 if __name__ == "__main__":
     generate_post()
