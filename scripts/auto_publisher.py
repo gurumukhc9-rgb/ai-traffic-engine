@@ -6,13 +6,17 @@ from email.mime.multipart import MIMEMultipart
 
 def generate_and_send():
     api_key = os.environ.get('GEMINI_API_KEY')
-    receiver_email = os.environ.get('BLOGGER_EMAIL')
+    # Aapka Blogger secret email jo screenshot mein hai
+    blogger_email = "gurumukhc9.myblog2026@blogger.com"
     
-    if not api_key:
-        print("Error: GEMINI_API_KEY is missing from GitHub Secrets!")
+    # Gmail credentials jo GitHub Secrets se aayenge taaki email bheja ja sake
+    sender_email = os.environ.get('BLOGGER_EMAIL')
+    sender_password = os.environ.get('MAIL_APP_PASSWORD') # Gmail App Password
+    
+    if not api_key or not sender_email or not sender_password:
+        print("Error: Required Secrets are missing in GitHub!")
         return
 
-    # Initializing the modern Google GenAI client
     client = genai.Client(api_key=api_key)
     
     prompt = (
@@ -24,14 +28,13 @@ def generate_and_send():
     )
     
     try:
-        # Using the latest stable model as per current requirements
         response = client.models.generate_content(
             model='gemini-3.6-flash',
             contents=prompt,
         )
         text = response.text.strip()
     except Exception as e:
-        print(f"Primary model generation failed, trying fallback: {e}")
+        print(f"Primary model failed, trying fallback: {e}")
         response = client.models.generate_content(
             model='gemini-1.5-flash',
             contents=prompt,
@@ -50,20 +53,22 @@ def generate_and_send():
             
     print(f"Generated Title: {title}")
     
+    # Creating the email payload for Blogger
     msg = MIMEMultipart()
     msg['Subject'] = title
-    msg['From'] = 'automation@github.com'
-    msg['To'] = receiver_email
+    msg['From'] = sender_email
+    msg['To'] = blogger_email
     msg.attach(MIMEText(content, 'html'))
     
+    # Sending email directly to Blogger's secret publishing address
     try:
         with smtplib.SMTP('smtp.gmail.com', 587) as server:
             server.starttls()
-            server.login(receiver_email, 'dummy_pass')
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, blogger_email, msg.as_string())
+        print("Email successfully sent to Blogger. Post will go live immediately!")
     except Exception as e:
-        print(f"Mail Note (Safe to ignore if dummy): {e}")
-        
-    print("Content generation and publishing pipeline executed successfully!")
+        print(f"Failed to send email: {e}")
 
 if __name__ == "__main__":
     generate_and_send()
