@@ -8,9 +8,16 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    
+    # यह बोट को आपकी रिपोजिटरी में नई पोस्ट्स पुश (Commit & Push) करने की पूरी अनुमति देता है
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true # यह बोट को पुश करने की अनुमति देता है
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -18,16 +25,25 @@ jobs:
           python-version: '3.10'
 
       - name: Install Dependencies
-        run: pip install --upgrade google-genai requests
+        run: pip install --upgrade google-genai
 
       - name: Run Publisher Script
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python scripts/auto_publisher.py
 
-      - name: Upload Generated Post File
-        uses: actions/upload-artifact@v4
-        with:
-          name: fresh-blog-post
-          path: posts/
+      - name: Commit and Push Directly
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # अगर posts फ़ोल्डर नहीं बना तो उसे जबरदस्ती ट्रैक करने के लिए
+          if [ -d "posts" ]; then
+            git add posts/*.html
+            git commit -m "Add new generated blog post [skip ci]" || echo "No changes to commit"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "Error: posts/ folder was not created by the script."
+            exit 1
+          fi
           
