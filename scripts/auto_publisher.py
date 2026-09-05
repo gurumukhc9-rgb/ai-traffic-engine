@@ -1,6 +1,6 @@
 import os
-from google import genai
 import datetime
+from google import genai
 
 def generate_post():
     api_key = os.environ.get('GEMINI_API_KEY')
@@ -8,7 +8,7 @@ def generate_post():
         print("Error: GEMINI_API_KEY is missing!")
         return
 
-    print("API Key found. Initializing Gemini client...")
+    # नए SDK के अनुसार क्लाइंट बनाना
     client = genai.Client(api_key=api_key)
     
     prompt = (
@@ -20,25 +20,26 @@ def generate_post():
     )
     
     try:
-        print("Generating content with gemini-2.5-flash...")
+        # primary model: gemini-2.5-flash
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
         )
         text = response.text.strip()
     except Exception as e:
-        print(f"Primary failed, trying fallback: {e}")
+        print(f"Primary failed: {e}")
         try:
+            # backup model: gemini-2.5-pro
             response = client.models.generate_content(
                 model='gemini-2.5-pro',
                 contents=prompt,
             )
             text = response.text.strip()
         except Exception as e2:
-            print(f"All models failed: {e2}")
+            print(f"All failed: {e2}")
             return
             
-    # पक्का करें कि 'posts' फोल्डर बने
+    # यहाँ 'posts' नाम का फ़ोल्डर प्रोजेक्ट के अंदर ही बनेगा
     os.makedirs("posts", exist_ok=True)
     date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"posts/post_{date_str}.html"
@@ -46,7 +47,7 @@ def generate_post():
     with open(filename, "w", encoding="utf-8") as f:
         f.write(text)
         
-    print(f"File successfully created and saved at: {filename}")
+    print(f"Successfully created: {filename}")
 
 if __name__ == "__main__":
     generate_post()
