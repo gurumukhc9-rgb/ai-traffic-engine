@@ -2,9 +2,8 @@ import os
 from google import genai
 import datetime
 
-def generate_and_save_locally():
+def generate_post():
     api_key = os.environ.get('GEMINI_API_KEY')
-    
     if not api_key:
         print("Error: GEMINI_API_KEY is missing!")
         return
@@ -19,22 +18,23 @@ def generate_and_save_locally():
         "content using <h2> and <p> tags."
     )
     
+    # सबसे सुरक्षित और लेटेस्ट मॉडल का इस्तेमाल
     try:
         response = client.models.generate_content(
-            model='gemini-3.6-flash',
+            model='gemini-2.5-flash',
             contents=prompt,
         )
         text = response.text.strip()
     except Exception as e:
-        print(f"Primary model failed, trying fallback: {e}")
+        print(f"Primary failed, trying fallback: {e}")
         try:
             response = client.models.generate_content(
-                model='gemini-3.1-pro-preview',
+                model='gemini-2.5-pro',
                 contents=prompt,
             )
             text = response.text.strip()
         except Exception as e2:
-            print(f"Both models failed: {e2}")
+            print(f"All models failed: {e2}")
             return
             
     os.makedirs("posts", exist_ok=True)
@@ -44,8 +44,8 @@ def generate_and_save_locally():
     with open(filename, "w", encoding="utf-8") as f:
         f.write(text)
         
-    print(f"Article successfully saved to repository as: {filename}")
+    print(f"Article successfully saved to: {filename}")
 
 if __name__ == "__main__":
-    generate_and_save_locally()
+    generate_post()
     
