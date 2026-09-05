@@ -1,5 +1,3 @@
-
-    
 import os
 from google import genai
 import smtplib
@@ -31,7 +29,7 @@ def generate_and_send():
     
     try:
         response = client.models.generate_content(
-            model='gemini-3.6-flash',
+            model='gemini-2.5-flash',
             contents=prompt,
         )
         text = response.text.strip()
@@ -39,7 +37,7 @@ def generate_and_send():
         print(f"Primary model failed, trying fallback: {e}")
         try:
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-2.5-pro',
                 contents=prompt,
             )
             text = response.text.strip()
