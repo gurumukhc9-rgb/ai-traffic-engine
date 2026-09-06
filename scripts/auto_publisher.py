@@ -20,18 +20,18 @@ def generate_post():
     )
     
     try:
-        # primary model: gemini-2.5-flash
+        # primary model updated
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.6-flash',
             contents=prompt,
         )
         text = response.text.strip()
     except Exception as e:
         print(f"Primary failed: {e}")
         try:
-            # backup model: gemini-2.5-pro
+            # backup model updated
             response = client.models.generate_content(
-                model='gemini-2.5-pro',
+                model='gemini-3.1-pro-preview',
                 contents=prompt,
             )
             text = response.text.strip()
@@ -39,7 +39,7 @@ def generate_post():
             print(f"All failed: {e2}")
             return
             
-    # यहाँ 'posts' नाम का फ़ोल्डर प्रोजेक्ट के अंदर ही बनेगा
+    # 'posts' नाम का फ़ोल्डर प्रोजेक्ट के अंदर ही बनेगा
     os.makedirs("posts", exist_ok=True)
     date_str = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     filename = f"posts/post_{date_str}.html"
